@@ -3,7 +3,19 @@
 A menu bar app that turns on DualSense adaptive trigger effects on your Mac,
 for any game, even ones that don't support them.
 
-## Build it (one time)
+## Download
+
+1. Download **TriggerLab.dmg** from the
+   [latest release](https://github.com/MrStickman202/TriggerLab/releases/latest) and open it.
+   (TriggerLab.zip has the same app, if you prefer a zip.)
+2. Drag **Trigger Lab** onto the Applications folder, then open it from Applications.
+   It runs on Apple Silicon and Intel Macs with macOS 13 or later.
+3. The app isn't signed with an Apple developer account, so macOS blocks it the first
+   time. Open System Settings > Privacy & Security, scroll down, and click
+   **Open Anyway** next to the message about Trigger Lab. Or run this once in Terminal:
+   `xattr -dr com.apple.quarantine "/Applications/Trigger Lab.app"`
+
+## Or build it yourself
 
 1. If you've never used Swift on this Mac, install Apple's command line tools:
    `xcode-select --install`

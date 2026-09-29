@@ -3,3 +3,7 @@ Trigger Lab.app/
 
 # macOS
 .DS_Store
+
+# Release downloads
+*.zip
+*.dmg
