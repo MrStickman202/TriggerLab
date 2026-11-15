@@ -40,6 +40,9 @@ for any game, even ones that don't support them.
 - Quit from the panel so the triggers are reset to normal.
 - Right-click the menu bar icon (or use the button at the bottom of the panel) for
   **Check for Updates**. It compares your version with the newest release here.
+- Trigger Lab updates itself: each time it opens it looks for a newer release, installs
+  it and reopens. Untick **Update Automatically** in the right-click menu to stop that.
+  After an update macOS may ask you to allow Input Monitoring again.
 
 ## Modes
 
