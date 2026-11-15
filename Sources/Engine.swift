@@ -183,6 +183,8 @@ final class TriggerEngine: ObservableObject {
         RunLoop.main.add(timer, forMode: .common)
         housekeeping = timer
 
+        StatusMenu.shared.install()
+
         findController()
         refreshConnectionNote()
         applyAll()

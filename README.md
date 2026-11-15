@@ -38,6 +38,8 @@ for any game, even ones that don't support them.
 - Save your own setups with **Save > Save as new profile**.
 - The switch at the top turns every effect on or off.
 - Quit from the panel so the triggers are reset to normal.
+- Right-click the menu bar icon (or use the button at the bottom of the panel) for
+  **Check for Updates**. It compares your version with the newest release here.
 
 ## Modes
 

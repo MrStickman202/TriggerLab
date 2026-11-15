@@ -1,0 +1,60 @@
+# Builds Trigger Lab on a Mac in GitHub's cloud for every push, so the app is always
+# compiled and checked. Pushing a version tag (v1.1, v1.2...) also publishes a release
+# with TriggerLab.dmg and TriggerLab.zip, which is what "Check for Updates" looks at.
+name: Build
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test the Horizon bridge and version logic
+        run: |
+          swiftc -swift-version 5 Sources/HorizonBridge.swift Sources/Version.swift Tests/main.swift -o /tmp/tests
+          /tmp/tests
+
+      - name: Build the app
+        run: bash build.sh
+
+      - name: Check the version matches the tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" Info.plist)
+          if [ "v$VERSION" != "$GITHUB_REF_NAME" ]; then
+            echo "Info.plist says $VERSION but the tag is $GITHUB_REF_NAME"
+            exit 1
+          fi
+
+      - name: Package
+        run: |
+          ditto -c -k --keepParent "Trigger Lab.app" TriggerLab.zip
+          mkdir dmg
+          cp -R "Trigger Lab.app" dmg/
+          ln -s /Applications dmg/Applications
+          hdiutil create -volname "Trigger Lab" -srcfolder dmg -ov -format UDZO TriggerLab.dmg
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TriggerLab
+          path: |
+            TriggerLab.dmg
+            TriggerLab.zip
+
+      - name: Publish the release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" TriggerLab.dmg TriggerLab.zip \
+            --title "Trigger Lab ${GITHUB_REF_NAME#v}" --generate-notes

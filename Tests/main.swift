@@ -1,5 +1,5 @@
 // Tests for Sources/HorizonBridge.swift (not part of the app; build.sh only compiles Sources/).
-// Run: swiftc -swift-version 5 Sources/HorizonBridge.swift Tests/main.swift -o /tmp/t && /tmp/t
+// Run: swiftc -swift-version 5 Sources/HorizonBridge.swift Sources/Version.swift Tests/main.swift -o /tmp/t && /tmp/t
 // Set HORIZON_TEST_SOCKET to a fake game's socket to also run the socket test.
 import Foundation
 
@@ -133,6 +133,15 @@ do {
     check(bridge.current == .neutral, "let go once the controller went quiet")
     bridge.stop()
 }
+
+// Versions (Check for Updates).
+check(Version.isNewer("v1.1", than: "1.0"), "1.1 is newer than 1.0")
+check(Version.isNewer("1.10", than: "1.9"), "1.10 is newer than 1.9")
+check(Version.isNewer("v2", than: "1.9.9"), "2 is newer than 1.9.9")
+check(!Version.isNewer("v1.1", than: "1.1"), "same version")
+check(!Version.isNewer("1.1.0", than: "1.1"), "1.1.0 is 1.1")
+check(!Version.isNewer("v1.0", than: "1.1"), "older")
+check(!Version.isNewer("nightly", than: "1.1"), "no number is never newer")
 
 print(failures == 0 ? "ALL TESTS PASSED" : "\(failures) FAILED")
 exit(failures == 0 ? 0 : 1)

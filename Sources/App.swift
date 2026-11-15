@@ -345,6 +345,7 @@ struct PanelView: View {
 
     private var footer: some View {
         HStack {
+            Button("Check for Updates…") { Updater.shared.checkForUpdates() }
             Spacer()
             Button("Quit Trigger Lab") {
                 engine.shutdown()
