@@ -73,16 +73,15 @@ either turn off trigger effects in Controlify's controller settings and use the
 Controlify handle them. If the light bar flickers between colors, Controlify is
 setting its own color too; turn one of them off.
 
-## Bluetooth controller fix
+## Connection fix for Horizon Minecraft
 
 [Horizon](https://github.com/horizon-rust/horizon) (Minecraft: Java Edition rewritten in Rust)
 sees a Bluetooth DualSense on a Mac as connected but reads none of its buttons. Tick
-**Bluetooth controller fix** and Trigger Lab passes the buttons, sticks and triggers to
+**Connection fix for Horizon Minecraft** and Trigger Lab passes the buttons, sticks and triggers to
 the game, which then plays them like any controller (same bindings, same Controller
 Settings). Trigger effects and the light bar keep working at the same time.
 
-- It only works with games Trigger Lab can talk to directly. So far that's Horizon;
-  it does nothing for other games.
+- It only works in Horizon; it does nothing for other games.
 - The line under the switch says what it's doing. "Horizon not found" means the game
   isn't running, or Agent Control is off in Horizon Settings > Extras.
 - "Only while Horizon is in front" stops the controller moving your character while
