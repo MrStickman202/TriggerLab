@@ -51,7 +51,17 @@ final class DualSenseHID {
             let hid = Unmanaged<DualSenseHID>.fromOpaque(context).takeUnretainedValue()
             hid.handleInput(reportID: reportID, report: report, length: length)
         }, context)
+        IOHIDManagerRegisterDeviceRemovalCallback(manager, { context, _, _, _ in
+            guard let context else { return }
+            Unmanaged<DualSenseHID>.fromOpaque(context).takeUnretainedValue().onRemoved?()
+        }, context)
     }
+
+    /// Buttons, sticks and triggers from each full Bluetooth input report, on the main thread.
+    /// Horizon can't read that report itself (see HorizonBridge.swift).
+    var onPad: ((PadSnapshot) -> Void)?
+    /// A DualSense was disconnected. Called on the main thread.
+    var onRemoved: (() -> Void)?
 
     /// Called on the main thread when ✕ goes down (used to record calibration points).
     var onCross: (() -> Void)?
@@ -101,6 +111,10 @@ final class DualSenseHID {
         reportCount += 1
         lastInputTime = ProcessInfo.processInfo.systemUptime
         latest = snapshot
+
+        if kind == .bluetoothFull, let onPad, let pad = DualSense.parse([0x31] + snapshot.payload) {
+            onPad(pad)
+        }
 
         let cross = snapshot.crossPressed
         if cross && !lastCross { onCross?() }

@@ -529,6 +529,8 @@ struct SavedState: Codable {
     var rainbowSpeed = 0.5
     var calibrationLeft = TriggerCalibration()
     var calibrationRight = TriggerCalibration()
+    var horizonOn = false
+    var horizonFrontOnly = true
 
     private static let key = "TriggerLab.state.v1"
 
@@ -537,7 +539,8 @@ struct SavedState: Codable {
     init(enabled: Bool, keepAlive: Bool, linked: Bool, left: TriggerSettings, right: TriggerSettings,
          selectedProfileID: String, customProfiles: [Profile], lightOn: Bool, lightColor: LightColor,
          lightEffect: LightEffect, rainbowSpeed: Double,
-         calibrationLeft: TriggerCalibration, calibrationRight: TriggerCalibration) {
+         calibrationLeft: TriggerCalibration, calibrationRight: TriggerCalibration,
+         horizonOn: Bool, horizonFrontOnly: Bool) {
         self.enabled = enabled
         self.keepAlive = keepAlive
         self.linked = linked
@@ -551,6 +554,8 @@ struct SavedState: Codable {
         self.rainbowSpeed = rainbowSpeed
         self.calibrationLeft = calibrationLeft
         self.calibrationRight = calibrationRight
+        self.horizonOn = horizonOn
+        self.horizonFrontOnly = horizonFrontOnly
     }
 
     // Tolerant decoding, so settings saved by older versions still load.
@@ -569,6 +574,8 @@ struct SavedState: Codable {
         rainbowSpeed = try c.decodeIfPresent(Double.self, forKey: .rainbowSpeed) ?? 0.5
         calibrationLeft = try c.decodeIfPresent(TriggerCalibration.self, forKey: .calibrationLeft) ?? TriggerCalibration()
         calibrationRight = try c.decodeIfPresent(TriggerCalibration.self, forKey: .calibrationRight) ?? TriggerCalibration()
+        horizonOn = try c.decodeIfPresent(Bool.self, forKey: .horizonOn) ?? false
+        horizonFrontOnly = try c.decodeIfPresent(Bool.self, forKey: .horizonFrontOnly) ?? true
     }
 
     static func load() -> SavedState {

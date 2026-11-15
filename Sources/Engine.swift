@@ -87,6 +87,24 @@ final class TriggerEngine: ObservableObject {
         }
     }
 
+    // Horizon (Rust Minecraft) over Bluetooth: see HorizonBridge.swift.
+    @Published var horizonOn: Bool {
+        didSet {
+            guard horizonOn != oldValue else { return }
+            persist()
+            updateHorizon()
+        }
+    }
+    @Published var horizonFrontOnly: Bool {
+        didSet {
+            guard horizonFrontOnly != oldValue else { return }
+            persist()
+            horizon.frontOnly = horizonFrontOnly
+            horizon.refresh()
+        }
+    }
+    @Published private(set) var horizonStatus = ""
+
     @Published private(set) var customProfiles: [Profile] { didSet { persist() } }
     @Published private(set) var selectedProfileID: String { didSet { persist() } }
 
@@ -102,6 +120,8 @@ final class TriggerEngine: ObservableObject {
     private var rainbowPhase = 0.0
     private var rainbowLastTick = 0.0
     private var rateSample = (count: 0, time: 0.0)
+    private let horizon = HorizonLink()
+    private var horizonTimer: Timer?
 
     init() {
         let saved = SavedState.load()
@@ -118,6 +138,8 @@ final class TriggerEngine: ObservableObject {
         selectedProfileID = saved.selectedProfileID
         calibrationLeft = saved.calibrationLeft
         calibrationRight = saved.calibrationRight
+        horizonOn = saved.horizonOn
+        horizonFrontOnly = saved.horizonFrontOnly
 
         // Keep reading trigger presses while a game is the frontmost app.
         GCController.shouldMonitorBackgroundEvents = true
@@ -146,6 +168,14 @@ final class TriggerEngine: ObservableObject {
         hid.onCross = { [weak self] in
             Task { @MainActor in self?.recordCalibrationPoint() }
         }
+
+        // Both run on the main thread, straight from the HID callbacks: no hop, so presses reach
+        // the game without waiting for a task to be scheduled.
+        let link = horizon
+        hid.onPad = { pad in link.handle(pad) }
+        hid.onRemoved = { link.controllerRemoved() }
+        horizon.frontOnly = horizonFrontOnly
+        updateHorizon()
 
         let timer = Timer(timeInterval: 1.5, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.tick() }
@@ -230,7 +260,35 @@ final class TriggerEngine: ObservableObject {
     func shutdown() {
         housekeeping?.invalidate()
         rainbowTimer?.invalidate()
+        horizonTimer?.invalidate()
+        horizon.shutdown()
         releaseTriggers()
+    }
+
+    // MARK: Horizon
+
+    /// Starts or stops passing the controller to Horizon, and the timer that follows which app
+    /// is in front and keeps the panel's status line current.
+    private func updateHorizon() {
+        horizon.setOn(horizonOn)
+        horizonTimer?.invalidate()
+        horizonTimer = nil
+        guard horizonOn else {
+            horizonStatus = ""
+            return
+        }
+        let timer = Timer(timeInterval: 0.25, repeats: true) { [weak self] _ in
+            Task { @MainActor in self?.horizonTick() }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        horizonTimer = timer
+        horizonTick()
+    }
+
+    private func horizonTick() {
+        horizon.refresh()
+        let status = horizon.status(connection: hid.connection)
+        if status != horizonStatus { horizonStatus = status }
     }
 
     // MARK: Live position and diagnostics
@@ -574,7 +632,8 @@ final class TriggerEngine: ObservableObject {
                    selectedProfileID: selectedProfileID, customProfiles: customProfiles,
                    lightOn: lightOn, lightColor: lightColor,
                    lightEffect: lightEffect, rainbowSpeed: rainbowSpeed,
-                   calibrationLeft: calibrationLeft, calibrationRight: calibrationRight).save()
+                   calibrationLeft: calibrationLeft, calibrationRight: calibrationRight,
+                   horizonOn: horizonOn, horizonFrontOnly: horizonFrontOnly).save()
     }
 }
 

@@ -86,6 +86,8 @@ struct PanelView: View {
             Divider()
             keepAliveSection
             Divider()
+            horizonSection
+            Divider()
             toolsSection
         }
     }
@@ -304,6 +306,28 @@ struct PanelView: View {
             if engine.debugOn {
                 DiagnosticsView(side: ui.side)
                 CalibrationView(side: ui.side)
+            }
+        }
+    }
+
+    // Horizon (Rust Minecraft) over Bluetooth
+    private var horizonSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Toggle("Play Horizon over Bluetooth", isOn: $engine.horizonOn)
+                .toggleStyle(.checkbox)
+            Text("Horizon (Minecraft in Rust) can't read a DualSense's buttons over Bluetooth on a Mac. This passes them to the game.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            if engine.horizonOn {
+                Toggle("Only while Horizon is in front", isOn: $engine.horizonFrontOnly)
+                    .toggleStyle(.checkbox)
+                if !engine.horizonStatus.isEmpty {
+                    Text(engine.horizonStatus)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
         }
     }
