@@ -310,12 +310,12 @@ struct PanelView: View {
         }
     }
 
-    // Horizon (Rust Minecraft) over Bluetooth
+    // Bluetooth controller fix (Horizon is the only game it can reach so far)
     private var horizonSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Toggle("Play Horizon over Bluetooth", isOn: $engine.horizonOn)
+            Toggle("Bluetooth controller fix", isOn: $engine.horizonOn)
                 .toggleStyle(.checkbox)
-            Text("Horizon (Minecraft in Rust) can't read a DualSense's buttons over Bluetooth on a Mac. This passes them to the game.")
+            Text("For games that see the controller over Bluetooth but ignore its buttons. Passes your buttons and sticks straight to the game. Supported games so far: Horizon.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
